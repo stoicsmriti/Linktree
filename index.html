@@ -74,6 +74,10 @@ a:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 .c-lime { background: var(--lime); }
 .c-lilac { background: var(--lilac); }
 .cover { flex: none; width: 56px; height: auto; aspect-ratio: 2 / 3; object-fit: cover; border: 2px solid var(--ink); border-radius: 6px; background: var(--grey); display: block; }
+.visits { display: flex; justify-content: center; }
+.visits[hidden] { display: none; }
+.visits p { margin: 0; display: inline-flex; align-items: baseline; gap: 10px; padding: 8px 16px; border: 2px solid var(--fg); border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.visits output { font-size: 1.05rem; letter-spacing: 0; font-variant-numeric: tabular-nums; }
 @media (max-width: 360px) { .card { gap: 12px; padding: 14px; } .cover { width: 48px; } }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
@@ -135,7 +139,28 @@ a:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       </a>
     </div>
   </section>
+  <footer class="visits" id="visits" hidden>
+    <p>Visitors <output id="visit-count" aria-live="polite">0</output></p>
+  </footer>
 </main>
 
+<script>
+/* Visitor counter: stored by the free Abacus service (abacus.jasoncameron.dev), so it persists across visits.
+   One count per browser session; a refresh in the same tab only reads the number. */
+(function () {
+  var base = "https://abacus.jasoncameron.dev/", key = "stoicsmriti-linktree/visits";
+  var counted = false;
+  try { counted = sessionStorage.getItem("visit-counted") === "1"; } catch (e) {}
+  fetch(base + (counted ? "get/" : "hit/") + key)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (d) {
+      if (typeof d.value !== "number") return;
+      try { sessionStorage.setItem("visit-counted", "1"); } catch (e) {}
+      document.getElementById("visit-count").textContent = d.value.toLocaleString();
+      document.getElementById("visits").hidden = false;
+    })
+    .catch(function () {});
+})();
+</script>
 </body>
 </html>
